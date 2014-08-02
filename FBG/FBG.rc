@@ -84,57 +84,68 @@ FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
     LTEXT           "FBG，1.0 版",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2012",IDC_STATIC,42,26,114,8
+    LTEXT           "Copyright (C) 2014",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "确定",IDOK,113,41,50,14,WS_GROUP
 END
 
-IDD_FBG_DIALOG DIALOGEX 0, 0, 497, 307
+IDD_FBG_DIALOG DIALOGEX 0, 0, 511, 386
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "自动光栅仪"
+CAPTION "光栅控制软件"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,7,113,483,87
-    CONTROL         "",IDC_STATIC2,"Static",SS_BLACKFRAME,7,213,483,87
-    LTEXT           "误差曲线",IDC_STATIC,7,203,28,8
-    LTEXT           "目标曲线",IDC_MUBIAO_STATIC,7,103,483,8
-    PUSHBUTTON      "连接",IDC_GPIB_BUTTON,14,32,50,14
-    LTEXT           "状态：",IDC_STATIC,14,18,21,8
-    LTEXT           "关闭",IDC_GPIB_STATE,41,18,15,8
-    GROUPBOX        "光谱仪连接状态",IDC_STATIC,7,7,81,42
-    PUSHBUTTON      "修改物理地址",IDC_PHYADDRESS_CHANGE,21,71,50,14
-    LTEXT           "当前物理地址：",IDC_STATIC,18,58,49,8
-    LTEXT           "23",IDC_PHYSICSADDRESS,69,58,9,8
-    GROUPBOX        "",IDC_STATIC,7,48,82,40
-    GROUPBOX        "静态",IDC_STATIC,91,7,392,80
-    PUSHBUTTON      "...",IDC_READDESTINATE_LINE,446,15,25,14
-    EDITTEXT        IDC_DESTINATE_FILE,160,15,282,14,ES_AUTOHSCROLL
-    LTEXT           "读取目标曲线：",IDC_STATIC,107,18,49,8
-    EDITTEXT        IDC_EDIT2,160,31,40,14,ES_AUTOHSCROLL
-    LTEXT           "余量范围：",IDC_STATIC,121,34,35,8
-    LTEXT           "db",IDC_STATIC,203,34,9,8
-    PUSHBUTTON      "开始制作光栅",IDC_STAR_FBG_BUTTON,107,70,50,14
-END
-
-IDD_DIALOG1 DIALOGEX 0, 0, 191, 62
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "物理地址修改"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "确定",IDOK,123,17,50,14
-    PUSHBUTTON      "取消",IDCANCEL,123,36,50,14
-    LTEXT           "新的物理地址：",IDC_STATIC,15,20,57,8
-    EDITTEXT        IDC_EDIT1,75,17,40,14,ES_AUTOHSCROLL
-END
-
-IDD_DIALOG2 DIALOGEX 0, 0, 192, 65
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "退出",IDOK,135,44,50,14
-    LTEXT           "请切换光闸状态至关闭状态后退出:",IDC_STATIC,19,15,124,8
-    PUSHBUTTON      "切换",IDC_BUTTON2,59,25,50,14
+    GROUPBOX        "连接光谱仪",IDC_STATIC,7,7,188,75
+    LTEXT           "设备地址：",IDC_STATIC,14,23,38,11
+    EDITTEXT        IDC_GPIBDEVICE,53,19,40,14,ES_CENTER | ES_AUTOHSCROLL
+    LTEXT           "物理地址：",IDC_STATIC,14,40,38,11
+    EDITTEXT        IDC_GPIBPHYADDRE,53,36,40,14,ES_CENTER | ES_AUTOHSCROLL
+    PUSHBUTTON      "连接",IDC_GPIBOPEN_BUTTON1,104,21,67,25
+    EDITTEXT        IDC_OSA_TYPE,36,59,153,16,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "描述:",IDC_STATIC,15,62,17,8
+    CONTROL         "",IDC_TEMPLATE,"Static",SS_BLACKFRAME,151,108,345,128
+    PUSHBUTTON      "扫描",IDC_SCAN,156,91,50,14
+    GROUPBOX        "电机",IDC_STATIC,212,7,96,74
+    LTEXT           "串口：",IDC_STATIC,218,18,24,9
+    COMBOBOX        IDC_COMBO1,241,17,59,77,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "连接",IDC_COMCONNECT,232,36,50,14
+    GROUPBOX        "电机控制",IDC_STATIC,318,7,178,79
+    LTEXT           "状态：",IDC_STATIC,326,30,22,8
+    LTEXT           "",IDC_MOTOR_STATE,348,31,63,8
+    LTEXT           "移动电机(微米)",IDC_STATIC,327,47,48,8
+    EDITTEXT        IDC_EDIT1,410,44,40,14,ES_CENTER | ES_AUTOHSCROLL
+    PUSHBUTTON      "》",IDC_MOVERIGHT,455,45,15,12
+    PUSHBUTTON      "《",IDC_MOVELEFT,389,45,15,12
+    PUSHBUTTON      "开光闸",IDC_OPENGZ,326,66,50,14
+    GROUPBOX        "光谱仪设置",IDC_STATIC,7,90,132,113
+    LTEXT           "Trace",IDC_STATIC,15,102,19,8
+    COMBOBOX        IDC_COMBO2,56,101,48,95,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "点数：",IDC_STATIC,14,124,22,8
+    EDITTEXT        IDC_EDIT2,56,121,49,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,56,138,49,14,ES_AUTOHSCROLL
+    LTEXT           "终止波长：",IDC_STATIC,14,157,35,8
+    EDITTEXT        IDC_EDIT4,56,154,49,14,ES_AUTOHSCROLL
+    LTEXT           "起始波长：",IDC_STATIC,14,141,35,8
+    CONTROL         "",IDC_DIFFER,"Static",SS_BLACKFRAME,151,241,345,128
+    PUSHBUTTON      "设置模板",IDC_SETTEMPLATE,213,91,50,14
+    GROUPBOX        "电机定时移动",IDC_STATIC,7,218,132,114
+    PUSHBUTTON      "关光闸",IDC_CLOSEGZ,383,66,50,14
+    LTEXT           "位置：",IDC_STATIC,326,19,22,8
+    LTEXT           "",IDC_MOTOR_POS,348,19,63,8
+    PUSHBUTTON      "复位",IDC_MOTORRESET,442,65,50,14
+    LTEXT           "总时间：",IDC_STATIC,20,233,36,8
+    EDITTEXT        IDC_EDIT5,55,231,40,14,ES_AUTOHSCROLL
+    LTEXT           "时间步进：",IDC_STATIC,20,254,36,8
+    EDITTEXT        IDC_EDIT6,55,252,40,14,ES_AUTOHSCROLL
+    LTEXT           "距离步进：",IDC_STATIC,20,275,36,8
+    EDITTEXT        IDC_EDIT7,55,273,40,14,ES_AUTOHSCROLL
+    LTEXT           "ms",IDC_STATIC,99,234,10,8
+    LTEXT           "ms",IDC_STATIC,99,256,8,8
+    LTEXT           "um",IDC_STATIC,99,275,12,8
+    PUSHBUTTON      "《",IDC_BUTTON2,15,300,26,14
+    PUSHBUTTON      "》",IDC_BUTTON3,100,300,26,14
+    PUSHBUTTON      "刷新状态",IDC_UPDATESTATE,448,23,36,14
+    PUSHBUTTON      "Set",IDC_SETOSABUTTON,42,177,50,14
+    PUSHBUTTON      "HOME",IDC_HOMEBUTTON1,232,58,50,14
 END
 
 
@@ -144,8 +155,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -160,14 +171,14 @@ BEGIN
     BEGIN
         BLOCK "080403a8"
         BEGIN
-            VALUE "CompanyName", "TODO: <公司名>"
-            VALUE "FileDescription", "TODO: <文件说明>"
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "FBG.exe"
-            VALUE "LegalCopyright", "TODO: (C) <公司名>。保留所有权利。"
-            VALUE "OriginalFilename", "FBG.exe"
-            VALUE "ProductName", "TODO: <产品名>"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "CompanyName", "航天电子研究院"
+            VALUE "FileDescription", "布拉格光栅制作控制软件"
+            VALUE "FileVersion", "1.0"
+            VALUE "InternalName", "光栅制作控制软件.exe"
+            VALUE "LegalCopyright", "(C) <浙江大学>。保留所有权利。"
+            VALUE "OriginalFilename", "光栅制作控制软件.exe"
+            VALUE "ProductName", "布拉格光栅制作控制软件"
+            VALUE "ProductVersion", "1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -196,28 +207,37 @@ BEGIN
     IDD_FBG_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 490
+        RIGHTMARGIN, 504
         TOPMARGIN, 7
-        BOTTOMMARGIN, 300
-    END
-
-    IDD_DIALOG1, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 184
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 55
-    END
-
-    IDD_DIALOG2, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 185
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 58
+        BOTTOMMARGIN, 379
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_FBG_DIALOG DLGINIT
+BEGIN
+    IDC_COMBO2, 0x403, 2, 0
+0x0041, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0042, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0043, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0044, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0045, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0046, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0047, 
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////

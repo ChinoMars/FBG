@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="FBG"
-	ProjectGUID="{B77E4638-7643-4B1D-A342-697CD6F1A496}"
+	ProjectGUID="{6B9240D9-2B56-4FDF-9CCD-96E4B34B5633}"
 	RootNamespace="FBG"
 	Keyword="MFCProj"
 	TargetFrameworkVersion="196613"
@@ -198,23 +198,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GPIB_Control.cpp"
+				RelativePath=".\SerialPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\LightGateDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MotorControl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\OSA.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PhyAddress.cpp"
+				RelativePath=".\SerialPortApi.cpp"
 				>
 			</File>
 			<File
@@ -244,10 +232,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\CH375DLL.H"
-				>
-			</File>
-			<File
 				RelativePath=".\CurveLine.h"
 				>
 			</File>
@@ -260,31 +244,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GPIB_Control.h"
-				>
-			</File>
-			<File
-				RelativePath=".\LightGateDlg.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MoterControl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ni488.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OSA.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PhyAddress.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SerialPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SerialPortApi.h"
 				>
 			</File>
 			<File
@@ -293,6 +261,14 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\visa.h"
+				>
+			</File>
+			<File
+				RelativePath=".\visatype.h"
 				>
 			</File>
 		</Filter>
@@ -315,19 +291,15 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\CH375DLL.DLL"
-			>
-		</File>
-		<File
-			RelativePath=".\CH375DLL.LIB"
-			>
-		</File>
-		<File
-			RelativePath=".\gpib-32.obj"
-			>
-		</File>
-		<File
 			RelativePath=".\ReadMe.txt"
+			>
+		</File>
+		<File
+			RelativePath=".\visa32.dll"
+			>
+		</File>
+		<File
+			RelativePath=".\visa32.lib"
 			>
 		</File>
 	</Files>
