@@ -82,8 +82,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "关于 FBG"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
-    LTEXT           "FBG，1.0 版",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
+    LTEXT           "FBG，2.1 版",IDC_STATIC,42,14,114,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2014",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "确定",IDOK,113,41,50,14,WS_GROUP
 END
@@ -108,9 +108,9 @@ BEGIN
     LTEXT           "串口：",IDC_STATIC,218,18,24,9
     COMBOBOX        IDC_COMBO1,241,17,59,77,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "连接",IDC_COMCONNECT,232,36,50,14
-    GROUPBOX        "电机控制",IDC_STATIC,318,7,178,79
+    GROUPBOX        "电机控制",IDC_STATIC,318,7,178,97
     LTEXT           "状态：",IDC_STATIC,326,30,22,8
-    LTEXT           "",IDC_MOTOR_STATE,348,31,63,8
+    LTEXT           "",IDC_MOTOR_STATE,348,30,122,8
     LTEXT           "移动电机(微米)",IDC_STATIC,327,47,48,8
     EDITTEXT        IDC_EDIT1,410,44,40,14,ES_CENTER | ES_AUTOHSCROLL
     PUSHBUTTON      "》",IDC_MOVERIGHT,455,45,15,12
@@ -129,23 +129,33 @@ BEGIN
     PUSHBUTTON      "设置模板",IDC_SETTEMPLATE,213,91,50,14
     GROUPBOX        "电机定时移动",IDC_STATIC,7,218,132,114
     PUSHBUTTON      "关光闸",IDC_CLOSEGZ,383,66,50,14
-    LTEXT           "位置：",IDC_STATIC,326,19,22,8
-    LTEXT           "",IDC_MOTOR_POS,348,19,63,8
+    LTEXT           "位置：",IDC_STATIC,326,19,22,8,NOT WS_VISIBLE
+    LTEXT           "",IDC_MOTOR_POS,348,19,63,8,NOT WS_VISIBLE
     PUSHBUTTON      "复位",IDC_MOTORRESET,442,65,50,14
-    LTEXT           "总时间：",IDC_STATIC,20,233,36,8
-    EDITTEXT        IDC_EDIT5,55,231,40,14,ES_AUTOHSCROLL
-    LTEXT           "时间步进：",IDC_STATIC,20,254,36,8
-    EDITTEXT        IDC_EDIT6,55,252,40,14,ES_AUTOHSCROLL
-    LTEXT           "距离步进：",IDC_STATIC,20,275,36,8
-    EDITTEXT        IDC_EDIT7,55,273,40,14,ES_AUTOHSCROLL
-    LTEXT           "ms",IDC_STATIC,99,234,10,8
-    LTEXT           "ms",IDC_STATIC,99,256,8,8
-    LTEXT           "um",IDC_STATIC,99,275,12,8
-    PUSHBUTTON      "《",IDC_BUTTON2,15,300,26,14
-    PUSHBUTTON      "》",IDC_BUTTON3,100,300,26,14
-    PUSHBUTTON      "刷新状态",IDC_UPDATESTATE,448,23,36,14
-    PUSHBUTTON      "Set",IDC_SETOSABUTTON,42,177,50,14
+    LTEXT           "总时间：",IDC_STATIC,19,251,36,8
+    EDITTEXT        IDC_EDIT5,56,249,40,14,ES_AUTOHSCROLL
+    LTEXT           "时间步进：",IDC_STATIC,19,273,36,8
+    EDITTEXT        IDC_EDIT6,56,270,40,14,ES_AUTOHSCROLL
+    LTEXT           "距离步进：",IDC_DISSPAN_STATIC,19,293,36,8
+    EDITTEXT        IDC_EDIT7,56,291,40,14,ES_AUTOHSCROLL
+    LTEXT           "ms",IDC_STATIC,100,253,10,8
+    LTEXT           "ms",IDC_STATIC,100,274,15,8
+    LTEXT           "um",IDC_STATIC,100,293,12,8
+    PUSHBUTTON      "《",IDC_BUTTON2,15,314,26,14
+    PUSHBUTTON      "》",IDC_BUTTON3,99,314,26,14
+    PUSHBUTTON      "刷新状态",IDC_UPDATESTATE,472,15,22,26,BS_MULTILINE
+    PUSHBUTTON      "Set",IDC_SETOSABUTTON,42,185,50,14
     PUSHBUTTON      "HOME",IDC_HOMEBUTTON1,232,58,50,14
+    PUSHBUTTON      "设置为起点",IDC_BUTTON4,327,83,50,14
+    PUSHBUTTON      "恢复到起点",IDC_BUTTON5,383,83,50,14
+    CONTROL         "切趾",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,233,30,10
+    LTEXT           "0",IDC_STATICCUR,84,233,19,8
+    LTEXT           "进度：",IDC_STATIC,60,233,22,8
+    LTEXT           "%",IDC_STATIC,106,233,8,8
+    PUSHBUTTON      "Stop",IDC_BUTTON6,45,314,50,14
+    COMBOBOX        IDC_RBW_COMBO3,57,171,48,85,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "分辨率：",IDC_STATIC,15,173,28,8
+    LTEXT           "nm",IDC_STATIC,114,173,11,8
 END
 
 
@@ -173,12 +183,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "航天电子研究院"
             VALUE "FileDescription", "布拉格光栅制作控制软件"
-            VALUE "FileVersion", "1.0"
+            VALUE "FileVersion", "2.1"
             VALUE "InternalName", "光栅制作控制软件.exe"
             VALUE "LegalCopyright", "(C) <浙江大学>。保留所有权利。"
             VALUE "OriginalFilename", "光栅制作控制软件.exe"
             VALUE "ProductName", "布拉格光栅制作控制软件"
-            VALUE "ProductVersion", "1.0"
+            VALUE "ProductVersion", "2.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -236,6 +246,20 @@ BEGIN
 0x0046, 
     IDC_COMBO2, 0x403, 2, 0
 0x0047, 
+    IDC_RBW_COMBO3, 0x403, 5, 0
+0x2e30, 0x3230, "\000" 
+    IDC_RBW_COMBO3, 0x403, 5, 0
+0x2e30, 0x3530, "\000" 
+    IDC_RBW_COMBO3, 0x403, 4, 0
+0x2e30, 0x0031, 
+    IDC_RBW_COMBO3, 0x403, 4, 0
+0x2e30, 0x0032, 
+    IDC_RBW_COMBO3, 0x403, 4, 0
+0x2e30, 0x0035, 
+    IDC_RBW_COMBO3, 0x403, 2, 0
+0x0031, 
+    IDC_RBW_COMBO3, 0x403, 2, 0
+0x0032, 
     0
 END
 

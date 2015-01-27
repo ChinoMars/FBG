@@ -7,6 +7,9 @@
 #include "afxwin.h"
 #include "CurveLine.h"
 #include "SerialPortApi.h"
+#include <fstream>
+#include <vector>
+#include <math.h>
 #define BUFFER_SIZE 65535
 #define OSA_TIMER_ID 313
 #define RECV_TIMER_ID 314
@@ -14,6 +17,11 @@
 #define SENDTP_TIMER_ID 316
 #define MOVETIMER_TIMER_ID 317
 #pragma comment(lib,"visa32.lib")
+
+#define NULL_POSITION INT_MIN
+#define DIFFPOS_FILENAME "pos.dat"
+#define EE 2.718281828459045
+using namespace std;
 
 // CFBGDlg 对话框
 class CFBGDlg : public CDialog
@@ -45,8 +53,19 @@ protected:
 //COM
 	CSerialPortApi COMPort;
 	int COMIsOpen;
-	double movecounter;
-	CString movespan;
+	int movecounter;
+	int moveidx;
+	vector<float> movespan;
+
+	float curPos;
+	float oriPos;
+	float chirpBeginPos;
+	int IschripMode;
+	double beginwl,endwl;
+	float GetDiffPos();
+	void SaveDiffPos(float pos);
+	void MoveRelative(float dis);
+	void MoveAbsolute(float dis);
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -73,7 +92,7 @@ public:
 	CStatic m_motorstate;
 	afx_msg void OnBnClickedOpengz();
 	afx_msg void OnBnClickedClosegz();
-	CStatic m_motor_pos;
+	//CStatic m_motor_pos;
 	int m_MoveDis;
 	afx_msg void OnBnClickedMoveleft();
 	afx_msg void OnBnClickedMoveright();
@@ -91,4 +110,11 @@ public:
 	int m_EndWL;
 	afx_msg void OnBnClickedSetosabutton();
 	afx_msg void OnBnClickedHomebutton1();
+	afx_msg void OnBnClickedButton4();
+	afx_msg void OnBnClickedButton5();
+	afx_msg void OnBnChirpButtonCheck1();
+	CButton m_ChirpMode;
+	CStatic m_disSpanStatic;
+	int m_curtime;
+	afx_msg void OnBnClickedButton6();
 };

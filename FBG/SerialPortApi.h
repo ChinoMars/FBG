@@ -3,7 +3,7 @@
 #include "SerialPort.h"
 #include <afxmt.h>
 #include <deque>
-
+#include <vector>
 #define PORT_DEBUG_MODE 1
 
 #define MAX_PORT_NUM 256
@@ -55,6 +55,7 @@ public:
 	BOOL ReceiveFlag;
 	//读取接受的数据
 	CString ReadRecv();
+	vector<CString> ReadRecvByteSplite(char ch);
 	CString ErrorMsg();
 private:
 	//************************************

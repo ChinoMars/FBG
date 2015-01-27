@@ -51,12 +51,13 @@ CFBGDlg::CFBGDlg(CWnd* pParent /*=NULL*/)
 	, m_GpibDeviceId(1)
 	, m_GpibPhyAdd(1)
 	, m_MoveDis(0)
-	, m_TotalTime(0)
-	, m_TimeSpan(0)
-	, m_DisSpan(0)
-	, m_pointnum(1024)
-	, m_BeginWL(1520)
-	, m_EndWL(1555)
+	, m_TotalTime(60000)
+	, m_TimeSpan(600)
+	, m_DisSpan(15000)
+	, m_pointnum(3001)
+	, m_BeginWL(1540)
+	, m_EndWL(1545)
+	, m_curtime(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	GpibIsOpen = 0;
@@ -65,6 +66,10 @@ CFBGDlg::CFBGDlg(CWnd* pParent /*=NULL*/)
 	COMIsOpen = 0;
 	TemplateCurve = NULL;
 	CurCurve = NULL ;
+	curPos = NULL_POSITION;
+	beginwl = NULL_POSITION;
+	endwl = NULL_POSITION;
+	IschripMode = 0;
 }
 
 void CFBGDlg::DoDataExchange(CDataExchange* pDX)
@@ -81,7 +86,7 @@ void CFBGDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO1, m_port);
 	DDX_Control(pDX, IDC_COMCONNECT, m_comConnectButton);
 	DDX_Control(pDX, IDC_MOTOR_STATE, m_motorstate);
-	DDX_Control(pDX, IDC_MOTOR_POS, m_motor_pos);
+//	DDX_Control(pDX, IDC_MOTOR_POS, m_motor_pos);
 	DDX_Text(pDX, IDC_EDIT1, m_MoveDis);
 	DDV_MinMaxInt(pDX, m_MoveDis, -50001, 50001);
 	DDX_Control(pDX, IDC_COMBO2, m_trace);
@@ -92,6 +97,9 @@ void CFBGDlg::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_pointnum, 1, 65535);
 	DDX_Text(pDX, IDC_EDIT3, m_BeginWL);
 	DDX_Text(pDX, IDC_EDIT4, m_EndWL);
+	DDX_Control(pDX, IDC_CHECK1, m_ChirpMode);
+	DDX_Control(pDX, IDC_DISSPAN_STATIC, m_disSpanStatic);
+	DDX_Text(pDX, IDC_STATICCUR, m_curtime);
 }
 
 BEGIN_MESSAGE_MAP(CFBGDlg, CDialog)
@@ -117,6 +125,10 @@ BEGIN_MESSAGE_MAP(CFBGDlg, CDialog)
 	ON_BN_CLICKED(IDC_UPDATESTATE, &CFBGDlg::OnBnClickedUpdatestate)
 	ON_BN_CLICKED(IDC_SETOSABUTTON, &CFBGDlg::OnBnClickedSetosabutton)
 	ON_BN_CLICKED(IDC_HOMEBUTTON1, &CFBGDlg::OnBnClickedHomebutton1)
+	ON_BN_CLICKED(IDC_BUTTON4, &CFBGDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON5, &CFBGDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_CHECK1, &CFBGDlg::OnBnChirpButtonCheck1)
+	ON_BN_CLICKED(IDC_BUTTON6, &CFBGDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 
@@ -162,7 +174,10 @@ BOOL CFBGDlg::OnInitDialog()
 	else{
 		m_port.SetCurSel(2);
 	}
-m_trace.SetCurSel(0);
+	m_trace.SetCurSel(0);
+	oriPos = NULL_POSITION;
+	CComboBox* RBW = (CComboBox*)GetDlgItem(IDC_RBW_COMBO3);
+	RBW->SetCurSel(0);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -233,7 +248,13 @@ void CFBGDlg::OnBnClickedGpibopenButton1()
 		CString GPIBADDR;
 		GPIBADDR.Format("GPIB%d::%d::INSTR",m_GpibDeviceId,m_GpibPhyAdd);
 		ViStatus GPIBState = viOpen (defaultRM, GPIBADDR.GetBuffer(), VI_NULL,VI_NULL, &vi);
-		if(GPIBState != 0){//Error
+		while(GPIBState != 0 && m_GpibPhyAdd < 32){
+			m_GpibPhyAdd++;
+			UpdateData(FALSE);
+			GPIBADDR.Format("GPIB%d::%d::INSTR",m_GpibDeviceId,m_GpibPhyAdd);
+			GPIBState = viOpen (defaultRM, GPIBADDR.GetBuffer(), VI_NULL,VI_NULL, &vi);
+		}//Error
+		if(GPIBState != 0){
 			char ErrorDesc[BUFFER_SIZE];
 			viStatusDesc(vi,GPIBState,ErrorDesc);
 			m_GPIBDEVICE.SetWindowText(ErrorDesc);
@@ -266,7 +287,23 @@ void CFBGDlg::OnBnClickedGpibopenButton1()
 
 void CFBGDlg::OnBnClickedScan()
 {
+	if(!GpibIsOpen)
+	{
+		AfxMessageBox("请先打开GPIB!!");
+		return;
+	}
 	if(GpibIsScaning == 0){
+		char str[200];
+		viPrintf (vi, "sens:wav:star?\n");
+		viScanf (vi, "%s", &str);
+		beginwl = StringDecode(str,9);
+		viPrintf (vi, "sens:wav:stop?\n");
+		viScanf (vi, "%s", &str);
+		endwl = StringDecode(str,9);
+		//CString mstr;
+		//mstr.Format("%f %f",beginwl,endwl);
+		//AfxMessageBox(mstr);
+		
 		SetTimer(OSA_TIMER_ID,200,NULL);
 		GpibIsScaning = 1;
 		m_ScanButton.SetWindowText("停止");
@@ -276,6 +313,7 @@ void CFBGDlg::OnBnClickedScan()
 		KillTimer(OSA_TIMER_ID);
 		m_ScanButton.SetWindowText("扫描");
 	}
+	
 }
 
 void CFBGDlg::OnTimer(UINT_PTR nIDEvent)
@@ -287,39 +325,85 @@ void CFBGDlg::OnTimer(UINT_PTR nIDEvent)
 			if(!hastemplate){
 				if(TemplateCurve)
 					delete TemplateCurve;
-				TemplateCurve = new CCurveLine(Buffer.GetBuffer(),0,1200);
+				TemplateCurve = new CCurveLine(Buffer.GetBuffer(),beginwl,endwl);
 			}
 			else
 			{
 				if (CurCurve)
 					delete CurCurve;
-				CurCurve = new CCurveLine(Buffer.GetBuffer(),0,1200);
+				CurCurve = new CCurveLine(Buffer.GetBuffer(),beginwl,endwl);
 				if(CurCurve->PointNum == TemplateCurve->PointNum)
 				{
 					for(int i = 0;i < CurCurve->PointNum;i++)
 					{
 						CurCurve->PointData[i] -= TemplateCurve->PointData[i];
+						//CurCurve->PointData[i] *= -1;
 					}
 				}
 				DrawCurve(IDC_DIFFER,CurCurve);
 
 			}
 			DrawCurve(IDC_TEMPLATE,TemplateCurve);
-			
+
 		}
 	}
 	else if(nIDEvent == RECV_TIMER_ID)
 	{
 		if(COMPort.ReceiveFlag)
 		{
-			CString str = COMPort.ReadRecv();
-			if(0 == str.Left(3).Compare("1TS"))
+			vector<CString> strlist = COMPort.ReadRecvByteSplite('\n');
+			for(size_t i = 0;i < strlist.size();i++)
 			{
-				m_motorstate.SetWindowText(str);
-			}
-			else if(0 == str.Left(3).Compare("1TP"))
-			{
-				m_motor_pos.SetWindowText(str.Right(str.GetLength()-3));
+				if(0 == strlist[i].Left(3).Compare("1TS"))
+				{
+					//m_motorstate.SetWindowText(strlist[i]);
+					CString state_flag = (strlist[i].Right(strlist[i].GetLength()-7)).Left(2);
+					if(state_flag == "OA")
+						m_motorstate.SetWindowText("NOT REFERENCED from reset");
+					else if(state_flag == "0B")
+						m_motorstate.SetWindowText("NOT REFERENCED from HOMING");
+					else if(state_flag == "0C")
+						m_motorstate.SetWindowText("NOT REFERENCED from CONFIGURATION");
+					else if(state_flag == "OD")
+						m_motorstate.SetWindowText("NOT REFERENCED from DISABLE");
+					else if(state_flag == "0E")
+						m_motorstate.SetWindowText("NOT REFERENCED from READY");
+					else if(state_flag == "0F")
+						m_motorstate.SetWindowText("NOT REFERENCED from MOVING");
+					else if(state_flag == "10")
+						m_motorstate.SetWindowText("NOT REFERENCED ESP stage error");
+					else if(state_flag == "14")
+						m_motorstate.SetWindowText("CONFIGURATION");
+					else if(state_flag == "1E")
+						m_motorstate.SetWindowText("HOMING");
+					else if(state_flag == "28")
+						m_motorstate.SetWindowText("MOVING");
+					else if(state_flag == "32")
+						m_motorstate.SetWindowText("READY from HOMING");
+					else if(state_flag == "33")
+						m_motorstate.SetWindowText("READY from MOVING");
+					else if(state_flag == "34")
+						m_motorstate.SetWindowText("READY from DISABLE");
+					else if(state_flag == "3C")
+						m_motorstate.SetWindowText("DISABLE from READY");
+					else if(state_flag == "3D")
+						m_motorstate.SetWindowText("DISABLE from MOVING");
+					else
+						m_motorstate.SetWindowText("解析失败"+state_flag);
+				}
+				else if(0 == strlist[i].Left(3).Compare("1TP"))
+				{
+					CString posStr = strlist[i].Right(strlist[i].GetLength()-3);
+//					m_motor_pos.SetWindowText(posStr);
+					curPos = float(atof(posStr));
+					if(oriPos == NULL_POSITION)
+					{
+
+						float temp = GetDiffPos();
+						oriPos = curPos - temp;
+					}
+					SaveDiffPos(curPos-oriPos);
+				}
 			}
 		}
 	}
@@ -339,15 +423,18 @@ void CFBGDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 	else if(nIDEvent == MOVETIMER_TIMER_ID )
 	{
-		if(movecounter > 0)
+		if(moveidx < movecounter && moveidx >= 0)
 		{
-			movecounter--;
-			COMPort.Send(movespan);
+			MoveAbsolute(movespan[moveidx]);
+			moveidx++;
+			UpdateData(TRUE);
+			m_curtime = moveidx*100/movecounter;
+			UpdateData(FALSE);
 		}
 		else
 		{
 			KillTimer(MOVETIMER_TIMER_ID);
-			
+			COMPort.Send("gzg\r\n");
 		}
 	}
 	CDialog::OnTimer(nIDEvent);
@@ -406,6 +493,8 @@ void CFBGDlg::DrawCurve( int ID,CCurveLine* curve)
 			if(DataMin > curve->PointData[i])
 				DataMin = curve->PointData[i];
 		}
+		DataMax = int(DataMax)+1;
+		DataMin = int(DataMin)-1;
 		int Left = 1;
 		double ReferenceLevel = DataMax + Left;
 		double PlotRange = DataMax-DataMin + Left;
@@ -430,7 +519,9 @@ void CFBGDlg::DrawCurve( int ID,CCurveLine* curve)
 		memDC.SelectObject(&pen_line);
 		memDC.MoveTo(0,rect.Height()/2);
 		memDC.LineTo(rect.Width(),rect.Height()/2);
-
+		
+		
+		
 		//显示坐标
 		CString str;
 		memDC.SetBkMode(TRANSPARENT);
@@ -441,6 +532,21 @@ void CFBGDlg::DrawCurve( int ID,CCurveLine* curve)
 		str.Format("%.2f db",ReferenceLevel-PlotRange);
 		CSize text_size = memDC.GetTextExtent(str);
 		memDC.TextOut(0,rect.Height()-text_size.cy,str);
+
+		str.Format("%.1f",beginwl);
+		memDC.TextOut(0,rect.Height()/2-text_size.cy,str);
+
+		str.Format("%.1f",endwl);
+		memDC.TextOut(rect.Width()-text_size.cx+text_size.cy,rect.Height()/2-text_size.cy,str);
+
+		pen_line.DeleteObject();
+		pen_line.CreatePen(PS_DASHDOT,1,RGB(0,255,0));
+		memDC.SelectObject(&pen_line);
+		for(int i = 1;i < 10;i++)
+		{
+			memDC.MoveTo(rect.Width()*i/10,0);
+			memDC.LineTo(rect.Width()*i/10,rect.Height());
+		}
 	}
 	//////////////////////////////////////////////////////////////
 	pDc->BitBlt(rect.left,rect.top,rect.Width(),rect.Height(),&memDC,0,0,SRCCOPY);
@@ -498,6 +604,7 @@ void CFBGDlg::OnBnClickedComconnect()
 		{
 			m_comConnectButton.SetWindowText("断开");
 			COMIsOpen = 1;
+			
 			SetTimer(RECV_TIMER_ID,50,NULL);
 			SetTimer(SENDTS_TIMER_ID,400,NULL);
 			SetTimer(SENDTP_TIMER_ID,500,NULL);
@@ -551,18 +658,14 @@ void CFBGDlg::OnBnClickedMoveleft()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
-	CString str;
-	str.Format("1PR%f\r\n",double(m_MoveDis)/1000);
-	COMPort.Send(str);
+	MoveRelative(float(m_MoveDis)/1000);
 }
 
 void CFBGDlg::OnBnClickedMoveright()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
-	CString str;
-	str.Format("1PR-%f\r\n",double(m_MoveDis)/1000);
-	COMPort.Send(str);
+	MoveRelative(float(-m_MoveDis)/1000);
 }
 
 void CFBGDlg::OnBnClickedMotorreset()
@@ -572,6 +675,7 @@ void CFBGDlg::OnBnClickedMotorreset()
 	COMPort.Send("1or\r\n");
 	//COMPort.Send("1PR3\r\n");
 	//SetTimer(SENDTS_TIMER_ID,500,NULL);
+	//SetTimer(SENDTS_TIMER_ID,400,NULL);
 }
 
 void CFBGDlg::OnEnChangeEdit1()
@@ -588,28 +692,117 @@ void CFBGDlg::OnBnClickedButton2()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
+	if(m_TotalTime <= 0 || m_TimeSpan <= 0 || m_DisSpan <= 0)
+	{
+		AfxMessageBox("参数不可为负!!");
+		return;
+	}
 	if(COMIsOpen)
 	{
+		movecounter = int(double(m_TotalTime)/m_TimeSpan);
+		moveidx = 0;
+		chirpBeginPos = curPos;
+		if(!IschripMode)
+		{
+			movespan.assign(movecounter,float(m_DisSpan)/1000);
+			for(size_t i = 1;i < movespan.size();i++)
+			{
+				movespan[i] += movespan[i-1];
+			}
+		}
+		else
+		{
+			movespan.assign(movecounter,0);
+			for(size_t i = 0;i < movespan.size();i++)
+			{
+				double idx = i;
+				// 修改切枝波形1！！[还有一个地方要修改]
+				movespan[i] = 1-pow(EE,-(6*(idx-movecounter/2)/movecounter)*(6*(idx-movecounter/2)/movecounter));
+				if(i != 0)
+				{
+					movespan[i] += movespan[i-1];
+				}
+			}
+			for(size_t i = 0;i < movespan.size();i++)
+			{
+				movespan[i] *= m_DisSpan/movespan[movespan.size()-1]/1000;
+			}
+			
+			//CString strtemp;
+			//strtemp.Format("%f",movespan[movespan.size()-1]);
+			//AfxMessageBox(strtemp);
+		}
+		for(size_t i = 0;i < movespan.size();i++)
+		{
+			movespan[i] += chirpBeginPos;
+		}
+		//CString ttt = "";
+		//for(int i = 0;i < movespan.size();i++)
+		//{
+		//	ttt.Format("%s   %f",ttt,movespan[i]);
+		//}
+		//AfxMessageBox(ttt);
+		UpdateData(TRUE);
+		m_curtime = 0;
+		UpdateData(FALSE);
+		COMPort.Send("gzk\r\n");
 		SetTimer(MOVETIMER_TIMER_ID,m_TimeSpan,NULL);
-		movecounter = double(m_TotalTime)/m_TimeSpan;
-		movespan.Format("1PR%f\r\n",double(m_DisSpan)/1000);
 	}
 	else
 	{
 		AfxMessageBox("请先打开串口");
 	}
-
 }
 
 void CFBGDlg::OnBnClickedButton3()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
+	if(m_TotalTime <= 0 || m_TimeSpan <= 0 || m_DisSpan <= 0)
+	{
+		AfxMessageBox("参数不可为负!!");
+		return;
+	}
 	if(COMIsOpen)
 	{
+		movecounter = int(double(m_TotalTime)/m_TimeSpan);
+		moveidx = 0;
+		chirpBeginPos = curPos;
+		if(!IschripMode)
+		{
+			movespan.assign(movecounter,float(-m_DisSpan)/1000);
+			for(size_t i = 1;i < movespan.size();i++)
+			{
+				movespan[i] += movespan[i-1];
+			}
+		}
+		else
+		{
+			movespan.assign(movecounter,0);
+			for(size_t i = 0;i < movespan.size();i++)
+			{
+				double idx = i;
+				// 修改切枝波形1！！[还有一个地方要修改]
+				movespan[i] = 1-pow(EE,-(6*(idx-movecounter/2)/movecounter)*(6*(idx-movecounter/2)/movecounter));
+				if(i != 0)
+				{
+					movespan[i] += movespan[i-1];
+				}
+			}
+			for(size_t i = 0;i < movespan.size();i++)
+			{
+				movespan[i] *= -m_DisSpan/movespan[movespan.size()-1]/1000;
+			}
+		}
+		for(size_t i = 0;i < movespan.size();i++)
+		{
+			movespan[i] += chirpBeginPos;
+		}
+		UpdateData(TRUE);
+		m_curtime = 0;
+		UpdateData(FALSE);
+		COMPort.Send("gzk\r\n");
 		SetTimer(MOVETIMER_TIMER_ID,m_TimeSpan,NULL);
-		movecounter = double(m_TotalTime)/m_TimeSpan;
-		movespan.Format("1PR-%f\r\n",double(m_DisSpan)/1000);
 	}
 	else
 	{
@@ -638,10 +831,103 @@ void CFBGDlg::OnBnClickedSetosabutton()
 	viPrintf (vi, str.GetBuffer());
 	str.Format("sens:wav:stop %dnm\n",m_EndWL);
 	viPrintf (vi, str.GetBuffer());
+	//RBW
+	//
+	int RBW[] = {20,50,100,200,500,1000,2000};
+	CComboBox* RBWCOM = (CComboBox*)GetDlgItem(IDC_RBW_COMBO3);
+	str.Format("SENSE:BANDWIDTH:RESOLUTION %dPM\n",RBW[RBWCOM->GetCurSel()]);
+	viPrintf (vi, str.GetBuffer());
 }
 
 void CFBGDlg::OnBnClickedHomebutton1()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	COMPort.Send("1or\r\n");
+}
+
+float CFBGDlg::GetDiffPos()
+{
+	fstream  m_posfile;
+	m_posfile.open(DIFFPOS_FILENAME,ios::in);
+	if(!m_posfile)
+	{
+		return NULL_POSITION;
+	}
+	else
+	{
+		float pos;
+		m_posfile>>pos;
+		m_posfile.close();
+		return pos;
+	}
+	
+}
+
+void CFBGDlg::SaveDiffPos( float pos )
+{
+	fstream  m_posfile;
+	m_posfile.open(DIFFPOS_FILENAME,ios::out|ios::_Noreplace);
+	m_posfile<<pos<<endl;
+}
+
+void CFBGDlg::MoveRelative( float dis )
+{
+	if(!COMIsOpen)
+		return;
+	CString str;
+	str.Format("1PR%f\r\n",dis);
+	COMPort.Send(str);
+}
+
+void CFBGDlg::OnBnClickedButton4()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	oriPos = curPos;
+}
+
+void CFBGDlg::OnBnClickedButton5()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(oriPos != NULL_POSITION && curPos != NULL_POSITION)
+	{
+		MoveRelative(oriPos-curPos);
+	}
+	else
+	{
+		AfxMessageBox("无法读取初始位置或读取当前位置，请重新设置");
+	}
+}
+
+
+void CFBGDlg::OnBnChirpButtonCheck1()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(m_ChirpMode.GetCheck())
+	{
+		m_disSpanStatic.SetWindowText("总距离：");
+		IschripMode = 1;
+	}
+	else
+	{
+		m_disSpanStatic.SetWindowText("距离步进：");
+		IschripMode = 0;
+	}
+}
+
+void CFBGDlg::MoveAbsolute( float dis )
+{
+	if(!COMIsOpen)
+		return;
+	CString str;
+	str.Format("1PA%f\r\n",dis);
+	COMPort.Send(str);
+}
+
+
+//Stop moving
+void CFBGDlg::OnBnClickedButton6()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	KillTimer(MOVETIMER_TIMER_ID);
+	COMPort.Send("gzg\r\n");
 }
