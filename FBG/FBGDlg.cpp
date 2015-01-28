@@ -129,6 +129,7 @@ BEGIN_MESSAGE_MAP(CFBGDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON5, &CFBGDlg::OnBnClickedButton5)
 	ON_BN_CLICKED(IDC_CHECK1, &CFBGDlg::OnBnChirpButtonCheck1)
 	ON_BN_CLICKED(IDC_BUTTON6, &CFBGDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_SAVESPECTRA, &CFBGDlg::OnBnClickedSavespectra)
 END_MESSAGE_MAP()
 
 
@@ -339,8 +340,8 @@ void CFBGDlg::OnTimer(UINT_PTR nIDEvent)
 						CurCurve->PointData[i] -= TemplateCurve->PointData[i];
 						//CurCurve->PointData[i] *= -1;
 					}
+					DrawCurve(IDC_DIFFER,CurCurve);
 				}
-				DrawCurve(IDC_DIFFER,CurCurve);
 
 			}
 			DrawCurve(IDC_TEMPLATE,TemplateCurve);
@@ -930,4 +931,47 @@ void CFBGDlg::OnBnClickedButton6()
 	// TODO: 在此添加控件通知处理程序代码
 	KillTimer(MOVETIMER_TIMER_ID);
 	COMPort.Send("gzg\r\n");
+}
+
+void CFBGDlg::OnBnClickedSavespectra()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(!CurCurve)
+	{
+		AfxMessageBox("没有频谱数据可以保持!!");
+		return;
+	}
+	CString   FilePathName;//文件名参数定义
+	CFileDialog  Dlg(TRUE,NULL,NULL,OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,"TXT Files(*.txt)|*.txt|All Files(*.*)|*.*");
+	//打开文件
+	if(Dlg.DoModal() == IDOK)//是否打开成功
+	{
+		FilePathName =  Dlg.GetPathName();//取得文件路径及文件名
+		if(FilePathName.Right(4).Compare(".txt"))
+		{
+			FilePathName += ".txt";
+		}
+		CFileStatus status;
+		if (!CFile::GetStatus(FilePathName,status))
+		{
+			CFile fid(FilePathName, CFile::modeCreate|CFile:: modeReadWrite);
+			CString strbuff = "";
+			for(int i = 0;i < CurCurve->PointNum;i++)
+			{
+				strbuff.Format("%s%f\n",strbuff,CurCurve->PointData[i]);
+				
+			}
+			fid.Write(strbuff,strbuff.GetLength());
+			fid.Close();
+		}
+		else
+		{
+			AfxMessageBox("文件已存在，请选择一个新的路径！");
+		}
+	}
+	else//打开失败处理
+	{
+		//打开失败处理
+		MessageBox("文件保存失败!",NULL,MB_OK);
+	}
 }
