@@ -956,10 +956,11 @@ void CFBGDlg::OnBnClickedSavespectra()
 		{
 			CFile fid(FilePathName, CFile::modeCreate|CFile:: modeReadWrite);
 			CString strbuff = "";
+			strbuff.Format("%sBegin WL:%.1f\n",strbuff,beginwl);
+			strbuff.Format("%sStop WL:%.1f\n",strbuff,endwl);
 			for(int i = 0;i < CurCurve->PointNum;i++)
 			{
 				strbuff.Format("%s%f\n",strbuff,CurCurve->PointData[i]);
-				
 			}
 			fid.Write(strbuff,strbuff.GetLength());
 			fid.Close();
