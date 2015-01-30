@@ -17,13 +17,13 @@ class CAboutDlg : public CDialog
 public:
 	CAboutDlg();
 
-// 对话框数据
+	// 对话框数据
 	enum { IDD = IDD_ABOUTBOX };
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
-// 实现
+	// 实现
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -47,17 +47,17 @@ END_MESSAGE_MAP()
 
 
 CFBGDlg::CFBGDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CFBGDlg::IDD, pParent)
-	, m_GpibDeviceId(1)
-	, m_GpibPhyAdd(1)
-	, m_MoveDis(0)
-	, m_TotalTime(60000)
-	, m_TimeSpan(600)
-	, m_DisSpan(15000)
-	, m_pointnum(3001)
-	, m_BeginWL(1540)
-	, m_EndWL(1545)
-	, m_curtime(0)
+: CDialog(CFBGDlg::IDD, pParent)
+, m_GpibDeviceId(1)
+, m_GpibPhyAdd(1)
+, m_MoveDis(0)
+, m_TotalTime(60000)
+, m_TimeSpan(600)
+, m_DisSpan(15000)
+, m_pointnum(3001)
+, m_BeginWL(1540)
+, m_EndWL(1545)
+, m_curtime(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	GpibIsOpen = 0;
@@ -67,9 +67,10 @@ CFBGDlg::CFBGDlg(CWnd* pParent /*=NULL*/)
 	TemplateCurve = NULL;
 	CurCurve = NULL ;
 	curPos = NULL_POSITION;
-	beginwl = NULL_POSITION;
-	endwl = NULL_POSITION;
+	beginwl = m_BeginWL;
+	endwl = m_EndWL;
 	IschripMode = 0;
+	rbw = 20;
 }
 
 void CFBGDlg::DoDataExchange(CDataExchange* pDX)
@@ -86,7 +87,7 @@ void CFBGDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO1, m_port);
 	DDX_Control(pDX, IDC_COMCONNECT, m_comConnectButton);
 	DDX_Control(pDX, IDC_MOTOR_STATE, m_motorstate);
-//	DDX_Control(pDX, IDC_MOTOR_POS, m_motor_pos);
+	//	DDX_Control(pDX, IDC_MOTOR_POS, m_motor_pos);
 	DDX_Text(pDX, IDC_EDIT1, m_MoveDis);
 	DDV_MinMaxInt(pDX, m_MoveDis, -50001, 50001);
 	DDX_Control(pDX, IDC_COMBO2, m_trace);
@@ -283,7 +284,7 @@ void CFBGDlg::OnBnClickedGpibopenButton1()
 
 		}
 	}
-	
+
 }
 
 void CFBGDlg::OnBnClickedScan()
@@ -304,7 +305,7 @@ void CFBGDlg::OnBnClickedScan()
 		//CString mstr;
 		//mstr.Format("%f %f",beginwl,endwl);
 		//AfxMessageBox(mstr);
-		
+
 		SetTimer(OSA_TIMER_ID,200,NULL);
 		GpibIsScaning = 1;
 		m_ScanButton.SetWindowText("停止");
@@ -314,7 +315,7 @@ void CFBGDlg::OnBnClickedScan()
 		KillTimer(OSA_TIMER_ID);
 		m_ScanButton.SetWindowText("扫描");
 	}
-	
+
 }
 
 void CFBGDlg::OnTimer(UINT_PTR nIDEvent)
@@ -395,7 +396,7 @@ void CFBGDlg::OnTimer(UINT_PTR nIDEvent)
 				else if(0 == strlist[i].Left(3).Compare("1TP"))
 				{
 					CString posStr = strlist[i].Right(strlist[i].GetLength()-3);
-//					m_motor_pos.SetWindowText(posStr);
+					//					m_motor_pos.SetWindowText(posStr);
 					curPos = float(atof(posStr));
 					if(oriPos == NULL_POSITION)
 					{
@@ -520,9 +521,9 @@ void CFBGDlg::DrawCurve( int ID,CCurveLine* curve)
 		memDC.SelectObject(&pen_line);
 		memDC.MoveTo(0,rect.Height()/2);
 		memDC.LineTo(rect.Width(),rect.Height()/2);
-		
-		
-		
+
+
+
 		//显示坐标
 		CString str;
 		memDC.SetBkMode(TRANSPARENT);
@@ -589,7 +590,7 @@ void CFBGDlg::OnBnClickedSettemplate()
 		hastemplate = 0;
 		m_SetTemplateButton.SetWindowText("设置模板");
 	}
-	
+
 }
 
 void CFBGDlg::OnBnClickedComconnect()
@@ -605,7 +606,7 @@ void CFBGDlg::OnBnClickedComconnect()
 		{
 			m_comConnectButton.SetWindowText("断开");
 			COMIsOpen = 1;
-			
+
 			SetTimer(RECV_TIMER_ID,50,NULL);
 			SetTimer(SENDTS_TIMER_ID,400,NULL);
 			SetTimer(SENDTP_TIMER_ID,500,NULL);
@@ -627,7 +628,7 @@ void CFBGDlg::OnBnClickedComconnect()
 			KillTimer(SENDTP_TIMER_ID);
 		}
 	}
-	
+
 }
 
 void CFBGDlg::OnBnClickedOpengz()
@@ -640,7 +641,7 @@ void CFBGDlg::OnBnClickedOpengz()
 	else{
 		AfxMessageBox("请先打开串口");
 	}
-	
+
 }
 
 void CFBGDlg::OnBnClickedClosegz()
@@ -728,7 +729,7 @@ void CFBGDlg::OnBnClickedButton2()
 			{
 				movespan[i] *= m_DisSpan/movespan[movespan.size()-1]/1000;
 			}
-			
+
 			//CString strtemp;
 			//strtemp.Format("%f",movespan[movespan.size()-1]);
 			//AfxMessageBox(strtemp);
@@ -837,6 +838,7 @@ void CFBGDlg::OnBnClickedSetosabutton()
 	int RBW[] = {20,50,100,200,500,1000,2000};
 	CComboBox* RBWCOM = (CComboBox*)GetDlgItem(IDC_RBW_COMBO3);
 	str.Format("SENSE:BANDWIDTH:RESOLUTION %dPM\n",RBW[RBWCOM->GetCurSel()]);
+	rbw = RBW[RBWCOM->GetCurSel()];
 	viPrintf (vi, str.GetBuffer());
 }
 
@@ -861,7 +863,7 @@ float CFBGDlg::GetDiffPos()
 		m_posfile.close();
 		return pos;
 	}
-	
+
 }
 
 void CFBGDlg::SaveDiffPos( float pos )
@@ -936,11 +938,11 @@ void CFBGDlg::OnBnClickedButton6()
 void CFBGDlg::OnBnClickedSavespectra()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	if(!CurCurve)
-	{
-		AfxMessageBox("没有频谱数据可以保持!!");
-		return;
-	}
+ 	if(!CurCurve)
+ 	{
+ 		AfxMessageBox("没有频谱数据可以保持!!");
+ 		return;
+ 	}
 	CString   FilePathName;//文件名参数定义
 	CFileDialog  Dlg(TRUE,NULL,NULL,OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,"TXT Files(*.txt)|*.txt|All Files(*.*)|*.*");
 	//打开文件
@@ -956,8 +958,35 @@ void CFBGDlg::OnBnClickedSavespectra()
 		{
 			CFile fid(FilePathName, CFile::modeCreate|CFile:: modeReadWrite);
 			CString strbuff = "";
-			strbuff.Format("%sBegin WL:%.1f\n",strbuff,beginwl);
-			strbuff.Format("%sStop WL:%.1f\n",strbuff,endwl);
+
+			CTime CurrentTime=CTime::GetCurrentTime();
+			strbuff.Format("%s%% Date:%d/%d/%d %d:%d:%d\n",strbuff,CurrentTime.GetYear(),CurrentTime.GetMonth(),CurrentTime.GetDay(),CurrentTime.GetHour(),  CurrentTime.GetMinute(),CurrentTime.GetSecond());
+			strbuff.Format("%s%% Begin WL:%.1f nm\n",strbuff,beginwl);
+			strbuff.Format("%s%% Stop WL:%.1f nm\n",strbuff,endwl);
+			strbuff.Format("%s%% Point Number:%d\n",strbuff,CurCurve->PointNum);
+			strbuff.Format("%s%% RBW:%d pm\n",strbuff,rbw);
+			
+
+			if(IschripMode)
+			{
+				strbuff.Format("%s%% Tpye:切趾\n",strbuff);
+			}
+			else
+			{
+				strbuff.Format("%s%% Tpye:均匀\n",strbuff);
+			}
+			strbuff.Format("%s%% Total Time:%d ms\n",strbuff,m_TotalTime);
+			strbuff.Format("%s%% Time Span:%d ms\n",strbuff,m_TimeSpan);
+			if(IschripMode)
+			{
+				strbuff.Format("%s%% Total Distance:%d um\n",strbuff,m_TotalTime);
+			}
+			else
+			{
+				strbuff.Format("%s%% Distance Span:%d ms\n",strbuff,m_DisSpan);
+			}
+			strbuff.Format("%s%% Data\n",strbuff);
+
 			for(int i = 0;i < CurCurve->PointNum;i++)
 			{
 				strbuff.Format("%s%f\n",strbuff,CurCurve->PointData[i]);

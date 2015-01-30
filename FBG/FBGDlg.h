@@ -62,6 +62,7 @@ protected:
 	float chirpBeginPos;
 	int IschripMode;
 	double beginwl,endwl;
+	int rbw;
 	float GetDiffPos();
 	void SaveDiffPos(float pos);
 	void MoveRelative(float dis);
