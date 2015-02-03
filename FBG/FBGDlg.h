@@ -107,8 +107,8 @@ public:
 	afx_msg void OnBnClickedButton3();
 	afx_msg void OnBnClickedUpdatestate();
 	int m_pointnum;
-	int m_BeginWL;
-	int m_EndWL;
+	double m_BeginWL;
+	double m_EndWL;
 	afx_msg void OnBnClickedSetosabutton();
 	afx_msg void OnBnClickedHomebutton1();
 	afx_msg void OnBnClickedButton4();
